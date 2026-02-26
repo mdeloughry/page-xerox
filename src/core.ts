@@ -68,13 +68,15 @@ export function convertHtml(html: string, options?: ConvertOptions): ConvertResu
     }
   }
 
-  // Derive path from canonical
+  // Derive path from canonical, or use explicit path option as fallback
   if (metadata.canonical) {
     try {
       metadata.path = new URL(metadata.canonical).pathname
     } catch {
       metadata.path = metadata.canonical
     }
+  } else if (options?.path) {
+    metadata.path = options.path
   }
 
   // Clean and convert
@@ -131,16 +133,11 @@ export async function convertDir(dirPath: string, options?: ConvertOptions): Pro
 
     const fullPath = join(dirPath, relPath)
     const html = await readFile(fullPath, 'utf-8')
-    const result = convertHtml(html, options)
+    const result = convertHtml(html, { ...options, path: urlPath })
 
     if (!result.markdown) {
       console.warn(`[page-xerox] Skipping ${relPath} - no content extracted`)
       continue
-    }
-
-    // Override path metadata to use URL path derived from file location if not set from canonical
-    if (result.metadata.path === '' || !result.metadata.canonical) {
-      result.metadata.path = urlPath
     }
 
     const mdPath = fullPath.replace(/\.html$/, '.md')

@@ -11,29 +11,29 @@
   },
   "exports": {
     ".": {
+      "types": "./dist/core.d.ts",
       "import": "./dist/core.js",
-      "require": "./dist/core.cjs",
-      "types": "./dist/core.d.ts"
+      "require": "./dist/core.cjs"
     },
     "./astro": {
+      "types": "./dist/astro.d.ts",
       "import": "./dist/astro.js",
-      "require": "./dist/astro.cjs",
-      "types": "./dist/astro.d.ts"
+      "require": "./dist/astro.cjs"
     },
     "./vite": {
+      "types": "./dist/vite.d.ts",
       "import": "./dist/vite.js",
-      "require": "./dist/vite.cjs",
-      "types": "./dist/vite.d.ts"
+      "require": "./dist/vite.cjs"
     },
     "./next": {
+      "types": "./dist/next.d.ts",
       "import": "./dist/next.js",
-      "require": "./dist/next.cjs",
-      "types": "./dist/next.d.ts"
+      "require": "./dist/next.cjs"
     },
     "./eleventy": {
+      "types": "./dist/eleventy.d.ts",
       "import": "./dist/eleventy.js",
-      "require": "./dist/eleventy.cjs",
-      "types": "./dist/eleventy.d.ts"
+      "require": "./dist/eleventy.cjs"
     }
   },
   "files": [
@@ -41,7 +41,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "rm -rf dist && tsup",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"

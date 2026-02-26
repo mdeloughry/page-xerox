@@ -80,4 +80,15 @@ describe('convertDir', () => {
     const written = await convertDir(tempDir)
     expect(written).toEqual([])
   })
+
+  it('derives path in frontmatter from file location when no canonical', async () => {
+    const blog = join(tempDir, 'blog')
+    mkdirSync(blog, { recursive: true })
+    writeFileSync(join(blog, 'index.html'), '<html><head><title>Blog</title></head><body><main><p>Blog post</p></main></body></html>')
+
+    await convertDir(tempDir)
+
+    const md = readFileSync(join(blog, 'index.md'), 'utf-8')
+    expect(md).toContain('path: /blog/')
+  })
 })

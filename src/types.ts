@@ -7,6 +7,8 @@ export interface ConvertOptions {
   metadata?: boolean
   /** Base URL for resolving relative canonical/og_image URLs */
   baseUrl?: string
+  /** Override the path field in frontmatter metadata */
+  path?: string
 }
 
 export interface ConvertResult {

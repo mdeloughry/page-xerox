@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { convertDir, convertHtml } from './core.js'
 import type { AdapterOptions } from './types.js'
 
@@ -13,7 +14,7 @@ export default function pageXerox(options?: AdapterOptions): AstroIntegration {
     name: 'page-xerox',
     hooks: {
       'astro:build:done': async ({ dir }: { dir: URL }) => {
-        const dirPath = dir.pathname
+        const dirPath = fileURLToPath(dir)
         const written = await convertDir(dirPath, options)
         console.log(`[page-xerox] Generated ${written.length} .md files`)
       },
@@ -73,10 +74,11 @@ async function resolveFromDisk(server: any, ...paths: string[]): Promise<string 
     const { readFile } = await import('node:fs/promises')
     const { join } = await import('node:path')
     const root = server.config?.root ?? process.cwd()
+    const outDir = server.config?.outDir ?? 'dist'
 
     for (const p of paths) {
       try {
-        return await readFile(join(root, 'dist', p), 'utf-8')
+        return await readFile(join(root, outDir, p), 'utf-8')
       } catch {
         continue
       }
