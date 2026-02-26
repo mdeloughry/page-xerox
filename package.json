@@ -1,0 +1,75 @@
+{
+  "name": "page-xerox",
+  "version": "0.1.0",
+  "description": "Universal static site utility that generates AI-ready Markdown from HTML pages",
+  "type": "module",
+  "main": "./dist/core.cjs",
+  "module": "./dist/core.js",
+  "types": "./dist/core.d.ts",
+  "bin": {
+    "page-xerox": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/core.js",
+      "require": "./dist/core.cjs",
+      "types": "./dist/core.d.ts"
+    },
+    "./astro": {
+      "import": "./dist/astro.js",
+      "require": "./dist/astro.cjs",
+      "types": "./dist/astro.d.ts"
+    },
+    "./vite": {
+      "import": "./dist/vite.js",
+      "require": "./dist/vite.cjs",
+      "types": "./dist/vite.d.ts"
+    },
+    "./next": {
+      "import": "./dist/next.js",
+      "require": "./dist/next.cjs",
+      "types": "./dist/next.d.ts"
+    },
+    "./eleventy": {
+      "import": "./dist/eleventy.js",
+      "require": "./dist/eleventy.cjs",
+      "types": "./dist/eleventy.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "astro": ">=4.0.0",
+    "vite": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "astro": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    }
+  },
+  "keywords": ["markdown", "html", "static-site", "ai", "astro", "vite", "nextjs", "eleventy"],
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "glob": "^13.0.6",
+    "node-html-markdown": "^2.0.0",
+    "yaml": "^2.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
