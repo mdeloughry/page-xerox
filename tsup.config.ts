@@ -5,6 +5,7 @@ export default defineConfig([
     entry: {
       core: 'src/core.ts',
       astro: 'src/astro.ts',
+      'astro-middleware': 'src/astro-middleware.ts',
       vite: 'src/vite.ts',
       next: 'src/next.ts',
       eleventy: 'src/eleventy.ts',

@@ -1,8 +1,8 @@
 # page-xerox
 
-Generate AI-ready Markdown copies of your HTML pages at build time.
+Generate AI-ready Markdown from your HTML pages - at build time or on the fly via SSR middleware.
 
-page-xerox hooks into your static site's build pipeline and produces `.md` files alongside your `.html` output - complete with YAML frontmatter. Feed them to LLMs, RAG pipelines, or search indexes.
+page-xerox hooks into your site's build pipeline and produces `.md` files alongside your `.html` output, complete with YAML frontmatter. For SSR sites, it serves markdown versions of pages at runtime. Feed them to LLMs, RAG pipelines, or search indexes.
 
 ## Install
 
@@ -14,9 +14,13 @@ npm install page-xerox
 bun add page-xerox
 ```
 
+> **Installing from git?** If you install from a GitHub URL (`git+https://github.com/...`), the `dist/` folder is committed to the repo so built files are available without a build step.
+
 ## Quick Start
 
-### Astro
+### Astro (static / hybrid)
+
+For sites using `output: "static"` or `"hybrid"`, the integration converts prerendered HTML to markdown at build time and serves `.md` files from the dev server:
 
 ```js
 // astro.config.mjs
@@ -32,6 +36,50 @@ export default defineConfig({
   ],
 })
 ```
+
+### Astro (SSR)
+
+For sites using `output: "server"`, there are no static HTML files at build time. The integration still provides dev middleware, but for production you need the SSR middleware to serve `.md` endpoints at runtime.
+
+**1. Add the integration** (for dev middleware):
+
+```js
+// astro.config.mjs
+import { defineConfig } from 'astro/config'
+import pageXerox from 'page-xerox/astro'
+
+export default defineConfig({
+  output: 'server',
+  integrations: [
+    pageXerox({ contentSelector: 'main' }),
+  ],
+})
+```
+
+**2. Add the SSR middleware** (for production):
+
+```ts
+// src/middleware.ts
+import { sequence } from 'astro:middleware'
+import { createMarkdownMiddleware } from 'page-xerox/astro-middleware'
+
+const pageXerox = createMarkdownMiddleware({ contentSelector: 'main' })
+
+export const onRequest = sequence(pageXerox)
+```
+
+Already have middleware? Chain it with `sequence()`:
+
+```ts
+import { sequence } from 'astro:middleware'
+import { createMarkdownMiddleware } from 'page-xerox/astro-middleware'
+
+const pageXerox = createMarkdownMiddleware({ contentSelector: 'main' })
+
+export const onRequest = sequence(myAuthMiddleware, pageXerox)
+```
+
+The middleware intercepts requests ending in `.md`, fetches the HTML from the local server, converts it, and returns markdown. A loop-prevention header (`x-page-xerox`) stops infinite recursion.
 
 ### Vite (SvelteKit, SolidStart)
 
@@ -125,7 +173,7 @@ All framework adapters and the CLI accept the same core options:
 
 ## Output Format
 
-For each `.html` file, page-xerox writes a `.md` file in the same directory. The output includes YAML frontmatter extracted from the HTML `<head>`:
+For each `.html` file, page-xerox writes a `.md` file in the same directory. The SSR middleware returns the same format as a response. The output includes YAML frontmatter extracted from the HTML `<head>`:
 
 ```markdown
 ---
@@ -152,6 +200,30 @@ Metadata fields are pulled from:
 - `generated` - ISO timestamp of when the file was generated
 
 Set `metadata: false` (or `--no-metadata` in the CLI) to omit the frontmatter block.
+
+## Making It Discoverable
+
+AI crawlers won't automatically find your `.md` endpoints. Add an `llms.txt` file at your site root to advertise them - it works like `robots.txt` but for AI agents.
+
+```markdown
+# My Site
+
+> Brief description of your site.
+
+All pages are available as markdown by appending .md to the URL.
+
+## Pages
+- [About](https://example.com/about.md): About page
+- [Blog](https://example.com/blog.md): Blog index
+```
+
+You can also add a `<link>` tag in your HTML `<head>` for automated discovery:
+
+```html
+<link rel="alternate" type="text/plain" title="LLM-friendly content" href="/llms.txt" />
+```
+
+See [llmstxt.org](https://llmstxt.org) for the full specification.
 
 ## Opting Out
 
@@ -201,6 +273,8 @@ pageXerox({
   },
 })
 ```
+
+For SSR sites, `fetch-first` or `fetch-only` is recommended since there are no static HTML files on disk.
 
 ## Programmatic API
 
@@ -261,6 +335,16 @@ Parse an HTML string and return metadata extracted from the `<head>`.
 ```ts
 const meta = extractMetadata('<html>...</html>')
 // { path, title, description, canonical, og_image, generated }
+```
+
+### `createMarkdownMiddleware(options?)`
+
+Create Astro-compatible middleware for serving `.md` endpoints in SSR production.
+
+```ts
+import { createMarkdownMiddleware } from 'page-xerox/astro-middleware'
+
+const middleware = createMarkdownMiddleware({ contentSelector: 'main' })
 ```
 
 ## License

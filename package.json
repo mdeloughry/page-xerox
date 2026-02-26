@@ -1,7 +1,7 @@
 {
   "name": "page-xerox",
   "version": "0.1.0",
-  "description": "Universal static site utility that generates AI-ready Markdown from HTML pages",
+  "description": "Generate AI-ready Markdown from your HTML pages - at build time or on the fly via SSR middleware",
   "type": "module",
   "main": "./dist/core.cjs",
   "module": "./dist/core.js",
@@ -19,6 +19,11 @@
       "types": "./dist/astro.d.ts",
       "import": "./dist/astro.js",
       "require": "./dist/astro.cjs"
+    },
+    "./astro-middleware": {
+      "types": "./dist/astro-middleware.d.ts",
+      "import": "./dist/astro-middleware.js",
+      "require": "./dist/astro-middleware.cjs"
     },
     "./vite": {
       "types": "./dist/vite.d.ts",
