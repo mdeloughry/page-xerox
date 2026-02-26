@@ -1,6 +1,9 @@
 import * as cheerio from 'cheerio'
 import { NodeHtmlMarkdown } from 'node-html-markdown'
 import { stringify as yamlStringify } from 'yaml'
+import { readFile, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
+import { glob } from 'glob'
 import type { ConvertOptions, ConvertResult, Metadata } from './types.js'
 
 export type { ConvertOptions, ConvertResult, Metadata } from './types.js'
@@ -100,4 +103,61 @@ export function convertHtml(html: string, options?: ConvertOptions): ConvertResu
   output += markdown
 
   return { markdown: output, metadata }
+}
+
+export async function convertFile(htmlPath: string, options?: ConvertOptions): Promise<void> {
+  const html = await readFile(htmlPath, 'utf-8')
+  const result = convertHtml(html, options)
+
+  if (!result.markdown) {
+    console.warn(`[page-xerox] Skipping ${htmlPath} - no content extracted`)
+    return
+  }
+
+  const mdPath = htmlPath.replace(/\.html$/, '.md')
+  await writeFile(mdPath, result.markdown, 'utf-8')
+}
+
+export async function convertDir(dirPath: string, options?: ConvertOptions): Promise<string[]> {
+  const htmlFiles = await glob('**/*.html', { cwd: dirPath })
+  const written: string[] = []
+
+  for (const relPath of htmlFiles) {
+    const urlPath = '/' + relPath.replace(/index\.html$/, '').replace(/\.html$/, '')
+
+    if (isExcluded(urlPath, options?.exclude)) {
+      continue
+    }
+
+    const fullPath = join(dirPath, relPath)
+    const html = await readFile(fullPath, 'utf-8')
+    const result = convertHtml(html, options)
+
+    if (!result.markdown) {
+      console.warn(`[page-xerox] Skipping ${relPath} - no content extracted`)
+      continue
+    }
+
+    // Override path metadata to use URL path derived from file location if not set from canonical
+    if (result.metadata.path === '' || !result.metadata.canonical) {
+      result.metadata.path = urlPath
+    }
+
+    const mdPath = fullPath.replace(/\.html$/, '.md')
+    await writeFile(mdPath, result.markdown, 'utf-8')
+    written.push(mdPath)
+  }
+
+  return written
+}
+
+function isExcluded(urlPath: string, exclude?: (string | RegExp)[]): boolean {
+  if (!exclude) return false
+
+  return exclude.some((pattern) => {
+    if (typeof pattern === 'string') {
+      return urlPath.startsWith(pattern)
+    }
+    return pattern.test(urlPath)
+  })
 }
